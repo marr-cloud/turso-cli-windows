@@ -25,7 +25,6 @@ jobs:
       - name: Check for new tags
         id: check-tags
         run: |
-          # Crear archivo para almacenar la última versión procesada
           LAST_VERSION_FILE=".last_version"
           
           # Si se proporciona una versión específica, usarla
@@ -37,8 +36,10 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add $LAST_VERSION_FILE
-            git commit -m "Actualizar última versión a ${{ github.event.inputs.version }}"
-            git push
+            if ! git diff --cached --quiet; then
+              git commit -m "Actualizar última versión a ${{ github.event.inputs.version }}"
+              git push
+            fi
             exit 0
           fi
           
@@ -71,8 +72,10 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add $LAST_VERSION_FILE
-            git commit -m "Actualizar última versión a $LATEST_TAG"
-            git push
+            if ! git diff --cached --quiet; then
+              git commit -m "Actualizar última versión a $LATEST_TAG"
+              git push
+            fi
           else
             echo "No se encontraron nuevas versiones o la versión más reciente ya fue procesada."
             echo "found_new_tag=false" >> $GITHUB_OUTPUT
