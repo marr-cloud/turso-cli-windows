@@ -91,10 +91,17 @@ jobs:
       - name: Build Turso CLI
         run: |
           version="${{ needs.check-tags.outputs.new_version }}"
-          command="go install -ldflags='-s -w' github.com/tursodatabase/turso-cli/cmd/turso@v$version && cp /go/bin/windows_amd64/turso.exe ."
+          ldflags="-s -w -X github.com/tursodatabase/turso-cli/internal/cmd.version=v${version}"
+          command="go install -ldflags='${ldflags}' github.com/tursodatabase/turso-cli/cmd/turso@v${version} && cp /go/bin/windows_amd64/turso.exe ."
           
           docker run --rm -v ${PWD}:/usr/src/app -w /usr/src/app -e GOOS=windows -e GOARCH=amd64 golang:1.25-alpine sh -c "$command"
         shell: bash
+      
+      - name: Verify version
+        run: |
+          echo "--- Verificando binario ---"
+          file turso.exe
+          echo "Tamaño: $(du -h turso.exe | cut -f1)"
       
       - name: Create Release
         id: create_release
